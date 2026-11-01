@@ -27,6 +27,11 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class manager_test extends \advanced_testcase {
+    /**
+     * Method test_parse_repository.
+     *
+     * @return void Return value.
+     */
     public function test_parse_repository(): void {
         $actual = manager::parse_repository('https://github.com/EduardoKrausME/moodle-mod_supervideo');
         $this->assertSame([
@@ -38,6 +43,11 @@ final class manager_test extends \advanced_testcase {
         $this->assertSame($actual, $git);
     }
 
+    /**
+     * Method test_rejects_untrusted_repository_urls.
+     *
+     * @return void Return value.
+     */
     public function test_rejects_untrusted_repository_urls(): void {
         $urls = [
             'http://github.com/example/plugin',
@@ -57,6 +67,11 @@ final class manager_test extends \advanced_testcase {
         }
     }
 
+    /**
+     * Method test_validate_ref.
+     *
+     * @return void Return value.
+     */
     public function test_validate_ref(): void {
         $this->assertSame('feature/moodle53', manager::validate_ref('feature/moodle53', 'branch'));
         $this->assertSame('v1.2.3', manager::validate_ref('v1.2.3', 'tag'));
@@ -64,6 +79,11 @@ final class manager_test extends \advanced_testcase {
         $this->assertSame($sha, manager::validate_ref($sha, 'commit'));
     }
 
+    /**
+     * Method test_rejects_unsafe_refs.
+     *
+     * @return void Return value.
+     */
     public function test_rejects_unsafe_refs(): void {
         foreach (['../main', 'main//test', '/main', 'main/', 'main.lock', 'main?token=abc'] as $ref) {
             try {
