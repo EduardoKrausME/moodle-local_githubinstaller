@@ -1,70 +1,43 @@
-# GitHub Plugin Installer for Moodle
+# GitHub Plugin Installer
 
-The local_githubinstaller plugin downloads a public GitHub repository archive and hands it to Moodle's built-in ZIP plugin installer. The administrator sees Moodle's own package validation and confirmation buttons before any plugin files are replaced.
+GitHub Plugin Installer lets Moodle site administrators select a public GitHub repository, inspect the plugin it contains and continue through Moodle's own plugin validation and confirmation process.
 
-It does not run Git commands, execute downloaded PHP during inspection, manage database upgrades, or bypass Moodle's installation checks.
+It is useful when a plugin is maintained on GitHub but is not distributed through the official plugins directory, or when an administrator needs to review a specific published version before updating an existing plugin.
 
-## Requirements
+## What administrators can do
 
-- Moodle 4.4 or newer, including Moodle 5.3.
-- PHP with cURL and ZipArchive enabled.
-- Outbound HTTPS access to api.github.com (to determine the default branch) and codeload.github.com (to download source archives).
-- Access to Site administration as a site administrator.
-- File-system permissions allowing Moodle's native plugin installer to deploy add-ons.
-- Automatic plugin deployment must not be disabled by $CFG->disableupdateautodeploy.
+- **Use a public GitHub repository:** provide the repository's standard URL instead of first downloading its archive manually.
+- **Choose a version:** use the repository's default branch or specify a branch, tag or full commit identifier.
+- **Review the package:** see the detected Moodle plugin component, its version and whether it would be added or updated.
+- **Keep Moodle's validation:** continue through the normal Moodle plugin checks and confirmation screens.
+- **Control updates:** receive a warning when the downloaded code has the same version as the installed plugin, and prevent accidental version downgrades.
 
-This first version supports **public GitHub repositories**. Private repositories and GitHub access tokens are not supported.
+The plugin simplifies how an administrator obtains and reviews the package. It does not bypass Moodle's approval process.
 
-## Installation
+## A typical administrator workflow
 
-Place these files in local/githubinstaller/ and visit the Site administration area to finish installation.
+An administrator wants to evaluate a new release of a plugin maintained in a public GitHub repository. After selecting the repository and version, GitHub Plugin Installer identifies the package and shows its component and version information.
 
-The page is registered under Site administration > Plugins > Local plugins > GitHub plugin installer, with exact menu labels depending on language. It is also available at:
+The administrator reviews those details and decides whether to continue. Moodle then performs its normal validation and presents the final confirmation before replacing or adding plugin files.
 
-    /local/githubinstaller/index.php
+The same workflow can be used for a new plugin or an update.
 
-## Installing or updating a plugin
+## Supported repositories
 
-1. Enter a repository URL such as https://github.com/EduardoKrausME/moodle-mod_supervideo.
-2. Keep the branch field blank to download the default branch, or select a branch, tag, or full commit SHA.
-3. Click Download and inspect.
-4. Review the detected Moodle component, new version number and the installed version, if any.
-5. Continue to Moodle's official ZIP installer. Review the validation report, then choose to confirm or cancel.
-6. Moodle deploys the plugin files and redirects to /admin/index.php to apply the database upgrade after confirmation.
+This release supports public GitHub repositories containing a single Moodle plugin. The repository must expose a valid Moodle plugin package.
 
-The process relies on tool_installaddon_installer::make_installfromzip_storage() and the existing installzipcomponent/installzipstorage flow in admin/tool/installaddon/index.php. It therefore uses core_plugin_manager::install_plugins() and upgrade_install_plugins() without duplicating the core installation logic.
+Private repositories, GitHub access tokens and repositories that contain multiple separate Moodle plugins are not supported. The plugin also rejects unsupported repository URL formats and invalid packages.
 
-## Supported GitHub URLs and references
+Moodle must permit plugin deployment through its built-in administration tools, and the server must be able to access public GitHub downloads.
 
-Only a canonical HTTPS repository URL is accepted, optionally ending in .git:
+## Security and updates
 
-    https://github.com/OWNER/REPOSITORY
+Only site administrators can use this feature. Package checks help reject invalid Moodle components, unsupported upgrades, attempts to update the installer itself and version downgrades. Downloading a repository does not execute its PHP code during inspection.
 
-Use separate reference fields for the branch, tag or 40-character commit SHA. URLs to GitHub tree pages and arbitrary HTTP/HTTPS download endpoints are deliberately rejected.
+**Review the source before approving a change.** A public GitHub repository is not necessarily a trusted or maintained plugin, and successful package validation does not guarantee that its code is secure or appropriate for production.
 
-When the reference is blank, the plugin queries GitHub's public REST API for the default branch, then downloads the corresponding archive from codeload.github.com.
+Updating a plugin can replace its existing code files. Keep an appropriate backup and a recovery plan before changing plugins on a production Moodle site. Dependencies are not automatically obtained from GitHub; Moodle's usual compatibility and dependency checks still apply.
 
-The ZIP must contain one top-level directory with a version.php at its root, declaring $plugin->component and $plugin->version as literal values. Monorepositories containing several plugin folders are not supported by this first release.
+**Compatibility:** Moodle 4.4 or newer.
 
-## Safety and update behavior
-
-- Requires Moodle administrator privileges and Moodle's sesskey checks.
-- Restricts sources to public GitHub repositories.
-- Refuses standard Moodle plugins, attempts to self-update, invalid plugin components, missing metadata and version downgrades.
-- Accepts archives up to 50 MB compressed and 200 MB unpacked, with at most 10,000 entries.
-- Checks the ZIP structure and metadata before starting native validation.
-- Warns when the archive and installed plugin have the same version number; same-version redeployment still requires approval.
-- Does not automatically install or upgrade dependencies; normal Moodle upgrade checks apply.
-- Does not create privileged server-side jobs or grant PHP new filesystem permissions.
-
-**Important:** Moodle's native ZIP installer replaces the existing plugin code folder for an update. Back up the site, plugin customisations, and database before replacing installed plugins. A deployment failure can require restoration. Only install code from trusted maintainers.
-
-Archives are staged in Moodle's native tool_installaddon temporary storage and remain subject to the normal temporary file clean-up.
-
-## Tests
-
-The tests/manager_test.php PHPUnit tests cover repository URL and Git ref validation without network access or installation side effects. Run tests in a configured Moodle PHPUnit environment.
-
-## License
-
-GNU General Public License version 3 or later. Copyright (c) 2026 Eduardo Kraus.
+**License:** GNU GPL v3 or later.
