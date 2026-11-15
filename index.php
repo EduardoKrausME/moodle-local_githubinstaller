@@ -36,7 +36,9 @@ $PAGE->set_url(new moodle_url('/local/githubinstaller/index.php',
 
 if (!empty($CFG->disableupdateautodeploy)) {
     echo $OUTPUT->header();
-    echo $OUTPUT->notification(get_string('autodeploydisabled', 'local_githubinstaller'), 'notifyproblem');
+    echo $OUTPUT->render_from_template('local_githubinstaller/overview', [
+        'error' => get_string('autodeploydisabled', 'local_githubinstaller'),
+    ]);
     echo $OUTPUT->footer();
     exit;
 }
@@ -45,37 +47,45 @@ if ($action === 'review') {
     require_sesskey();
     $package = \local_githubinstaller\manager::inspect_storage($storage);
 
+    $rows = [
+        [
+            'label' => get_string('component', 'local_githubinstaller'),
+            'value' => $package['component'],
+        ],
+        [
+            'label' => get_string('newversion', 'local_githubinstaller'),
+            'value' => $package['version'],
+        ],
+        [
+            'label' => get_string('currentversion', 'local_githubinstaller'),
+            'value' => $package['currentversion'] !== ''
+                ? $package['currentversion']
+                : get_string('notinstalled', 'local_githubinstaller'),
+        ],
+        [
+            'label' => get_string('operation', 'local_githubinstaller'),
+            'value' => get_string($package['installed'] ? 'update' : 'install', 'local_githubinstaller'),
+        ],
+    ];
+
+    // The native installer validates the archive and presents its own approval buttons.
     echo $OUTPUT->header();
     echo $OUTPUT->heading(get_string('reviewheading', 'local_githubinstaller'));
-    echo html_writer::tag('p', get_string('reviewintro', 'local_githubinstaller'));
-    $table = new html_table();
-    $table->data = [
-        [get_string('component', 'local_githubinstaller'), s($package['component'])],
-        [get_string('newversion', 'local_githubinstaller'), s($package['version'])],
-        [get_string('currentversion', 'local_githubinstaller'),
-            $package['currentversion'] !== '' ? s($package['currentversion']) : get_string('notinstalled', 'local_githubinstaller')],
-        [get_string('operation', 'local_githubinstaller'),
-            get_string($package['installed'] ? 'update' : 'install', 'local_githubinstaller')],
-    ];
-    echo html_writer::table($table);
-
-    if ($package['currentversion'] !== '' &&
-            (float)$package['currentversion'] === (float)$package['version']) {
-        echo $OUTPUT->notification(get_string('sameversionwarning', 'local_githubinstaller'), 'notifywarning');
-    }
-
-    echo $OUTPUT->notification(get_string('reviewwarning', 'local_githubinstaller'), 'notifymessage');
-
-    // This is the same entry point used by Moodle's official ZIP installer.
-    // The native tool validates the archive and displays its own approval buttons.
-    $nativeurl = new moodle_url('/admin/tool/installaddon/index.php', [
-        'installzipcomponent' => $package['component'],
-        'installzipstorage' => $package['storage'],
+    echo $OUTPUT->render_from_template('local_githubinstaller/review', [
+        'intro' => get_string('reviewintro', 'local_githubinstaller'),
+        'rows' => $rows,
+        'sameversion' => $package['currentversion'] !== '' &&
+            (float)$package['currentversion'] === (float)$package['version'],
+        'sameversionwarning' => get_string('sameversionwarning', 'local_githubinstaller'),
+        'warning' => get_string('reviewwarning', 'local_githubinstaller'),
+        'nativeaction' => (new moodle_url('/admin/tool/installaddon/index.php'))->out(false),
+        'component' => $package['component'],
+        'storage' => $package['storage'],
         'sesskey' => sesskey(),
+        'continuevalidation' => get_string('continuevalidation', 'local_githubinstaller'),
+        'cancelurl' => (new moodle_url('/local/githubinstaller/index.php'))->out(false),
+        'cancel' => get_string('cancel', 'moodle'),
     ]);
-    echo $OUTPUT->single_button($nativeurl, get_string('continuevalidation', 'local_githubinstaller'), 'get');
-    echo html_writer::link(new moodle_url('/local/githubinstaller/index.php'),
-        get_string('cancel', 'moodle'), ['class' => 'btn btn-secondary']);
     echo $OUTPUT->footer();
     exit;
 }
@@ -97,9 +107,9 @@ if ($data = $repositoryform->get_data()) {
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_githubinstaller'));
-echo html_writer::tag('p', get_string('introduction', 'local_githubinstaller'));
-if ($error !== '') {
-    echo $OUTPUT->notification(s($error), 'notifyproblem');
-}
+echo $OUTPUT->render_from_template('local_githubinstaller/overview', [
+    'introduction' => get_string('introduction', 'local_githubinstaller'),
+    'error' => $error,
+]);
 $repositoryform->display();
 echo $OUTPUT->footer();

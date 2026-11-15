@@ -1,0 +1,17 @@
+{{!
+    @template local_githubinstaller/overview
+
+    Introductory text and error notices for the installer.
+
+    Example context (json):
+    {
+        "introduction": "Enter a public GitHub repository URL.",
+        "error": ""
+    }
+}}
+{{#introduction}}
+    <p>{{introduction}}</p>
+{{/introduction}}
+{{#error}}
+    <div class="alert alert-danger" role="alert">{{error}}</div>
+{{/error}}

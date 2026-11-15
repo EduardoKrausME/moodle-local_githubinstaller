@@ -1,0 +1,47 @@
+{{!
+    @template local_githubinstaller/review
+
+    Package details and hand-off to Moodle's native ZIP installer.
+
+    Example context (json):
+    {
+        "intro": "Review the downloaded package.",
+        "rows": [{"label": "Component", "value": "local_example"}],
+        "sameversion": false,
+        "sameversionwarning": "The version number has not changed.",
+        "warning": "Only install trusted plugins.",
+        "nativeaction": "/admin/tool/installaddon/index.php",
+        "component": "local_example",
+        "storage": "temporary-directory",
+        "sesskey": "example-token",
+        "continuevalidation": "Continue to Moodle validation",
+        "cancelurl": "/local/githubinstaller/index.php",
+        "cancel": "Cancel"
+    }
+}}
+<p>{{intro}}</p>
+<div class="table-responsive">
+    <table class="generaltable table">
+        <tbody>
+            {{#rows}}
+                <tr>
+                    <th scope="row">{{label}}</th>
+                    <td>{{value}}</td>
+                </tr>
+            {{/rows}}
+        </tbody>
+    </table>
+</div>
+{{#sameversion}}
+    <div class="alert alert-warning" role="alert">{{sameversionwarning}}</div>
+{{/sameversion}}
+<div class="alert alert-info" role="note">{{warning}}</div>
+<div class="local-githubinstaller-actions">
+    <form action="{{nativeaction}}" method="get" class="d-inline-block mr-2 mb-2">
+        <input type="hidden" name="installzipcomponent" value="{{component}}">
+        <input type="hidden" name="installzipstorage" value="{{storage}}">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        <button type="submit" class="btn btn-primary">{{continuevalidation}}</button>
+    </form>
+    <a href="{{cancelurl}}" class="btn btn-secondary mb-2">{{cancel}}</a>
+</div>
