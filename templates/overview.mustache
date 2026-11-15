@@ -1,17 +1,69 @@
 {{!
     @template local_githubinstaller/overview
 
-    Introductory text and error notices for the installer.
+    The installation source form and the deployment-disabled message.
 
     Example context (json):
     {
-        "introduction": "Enter a public GitHub repository URL.",
+        "disabled": false,
+        "actionurl": "/local/githubinstaller/index.php",
+        "sesskey": "example-token",
+        "repository": "",
+        "ref": "",
+        "branchselected": true,
+        "tagselected": false,
+        "commitselected": false,
         "error": ""
     }
 }}
-{{#introduction}}
-    <p>{{introduction}}</p>
-{{/introduction}}
-{{#error}}
-    <div class="alert alert-danger" role="alert">{{error}}</div>
-{{/error}}
+<h2>{{#str}}pluginname, local_githubinstaller{{/str}}</h2>
+{{#disabled}}
+    <div class="alert alert-danger" role="alert">
+        {{#str}}autodeploydisabled, local_githubinstaller{{/str}}
+    </div>
+{{/disabled}}
+{{^disabled}}
+    <p>{{#str}}introduction, local_githubinstaller{{/str}}</p>
+    {{#error}}
+        <div class="alert alert-danger" role="alert">{{error}}</div>
+    {{/error}}
+    <form method="post" action="{{actionurl}}">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        <div class="form-group">
+            <label for="githubinstaller-repository">
+                {{#str}}repository, local_githubinstaller{{/str}}
+            </label>
+            <input id="githubinstaller-repository" name="repository" type="url"
+                   class="form-control" required="required" value="{{repository}}"
+                   placeholder="https://github.com/EduardoKrausME/moodle-mod_supervideo">
+        </div>
+        <div class="form-group">
+            <label for="githubinstaller-reftype">
+                {{#str}}reftype, local_githubinstaller{{/str}}
+            </label>
+            <select id="githubinstaller-reftype" name="reftype" class="form-control">
+                <option value="branch" {{#branchselected}}selected="selected"{{/branchselected}}>
+                    {{#str}}branch, local_githubinstaller{{/str}}
+                </option>
+                <option value="tag" {{#tagselected}}selected="selected"{{/tagselected}}>
+                    {{#str}}tag, local_githubinstaller{{/str}}
+                </option>
+                <option value="commit" {{#commitselected}}selected="selected"{{/commitselected}}>
+                    {{#str}}commit, local_githubinstaller{{/str}}
+                </option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="githubinstaller-ref">{{#str}}ref, local_githubinstaller{{/str}}</label>
+            <input id="githubinstaller-ref" name="ref" type="text" class="form-control"
+                   value="{{ref}}" placeholder="{{#str}}refplaceholder, local_githubinstaller{{/str}}"
+                   aria-describedby="githubinstaller-ref-help">
+            <small id="githubinstaller-ref-help" class="form-text text-muted">
+                {{#str}}ref_help, local_githubinstaller{{/str}}
+            </small>
+        </div>
+        <button type="submit" class="btn btn-primary">
+            {{#str}}prepare, local_githubinstaller{{/str}}
+        </button>
+    </form>
+{{/disabled}}

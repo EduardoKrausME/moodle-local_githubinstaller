@@ -5,43 +5,66 @@
 
     Example context (json):
     {
-        "intro": "Review the downloaded package.",
-        "rows": [{"label": "Component", "value": "local_example"}],
-        "sameversion": false,
-        "sameversionwarning": "The version number has not changed.",
-        "warning": "Only install trusted plugins.",
-        "nativeaction": "/admin/tool/installaddon/index.php",
         "component": "local_example",
+        "version": "2026110100",
+        "currentversion": "",
+        "hascurrentversion": false,
+        "installed": false,
+        "sameversion": false,
+        "nativeaction": "/admin/tool/installaddon/index.php",
         "storage": "temporary-directory",
         "sesskey": "example-token",
-        "continuevalidation": "Continue to Moodle validation",
-        "cancelurl": "/local/githubinstaller/index.php",
-        "cancel": "Cancel"
+        "cancelurl": "/local/githubinstaller/index.php"
     }
 }}
-<p>{{intro}}</p>
+<h2>{{#str}}reviewheading, local_githubinstaller{{/str}}</h2>
+<p>{{#str}}reviewintro, local_githubinstaller{{/str}}</p>
 <div class="table-responsive">
     <table class="generaltable table">
         <tbody>
-            {{#rows}}
-                <tr>
-                    <th scope="row">{{label}}</th>
-                    <td>{{value}}</td>
-                </tr>
-            {{/rows}}
+            <tr>
+                <th scope="row">{{#str}}component, local_githubinstaller{{/str}}</th>
+                <td>{{component}}</td>
+            </tr>
+            <tr>
+                <th scope="row">{{#str}}newversion, local_githubinstaller{{/str}}</th>
+                <td>{{version}}</td>
+            </tr>
+            <tr>
+                <th scope="row">{{#str}}currentversion, local_githubinstaller{{/str}}</th>
+                <td>
+                    {{#hascurrentversion}}{{currentversion}}{{/hascurrentversion}}
+                    {{^hascurrentversion}}{{#str}}notinstalled, local_githubinstaller{{/str}}{{/hascurrentversion}}
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">{{#str}}operation, local_githubinstaller{{/str}}</th>
+                <td>
+                    {{#installed}}{{#str}}update, local_githubinstaller{{/str}}{{/installed}}
+                    {{^installed}}{{#str}}install, local_githubinstaller{{/str}}{{/installed}}
+                </td>
+            </tr>
         </tbody>
     </table>
 </div>
 {{#sameversion}}
-    <div class="alert alert-warning" role="alert">{{sameversionwarning}}</div>
+    <div class="alert alert-warning" role="alert">
+        {{#str}}sameversionwarning, local_githubinstaller{{/str}}
+    </div>
 {{/sameversion}}
-<div class="alert alert-info" role="note">{{warning}}</div>
+<div class="alert alert-info" role="note">
+    {{#str}}reviewwarning, local_githubinstaller{{/str}}
+</div>
 <div class="local-githubinstaller-actions">
     <form action="{{nativeaction}}" method="get" class="d-inline-block mr-2 mb-2">
         <input type="hidden" name="installzipcomponent" value="{{component}}">
         <input type="hidden" name="installzipstorage" value="{{storage}}">
         <input type="hidden" name="sesskey" value="{{sesskey}}">
-        <button type="submit" class="btn btn-primary">{{continuevalidation}}</button>
+        <button type="submit" class="btn btn-primary">
+            {{#str}}continuevalidation, local_githubinstaller{{/str}}
+        </button>
     </form>
-    <a href="{{cancelurl}}" class="btn btn-secondary mb-2">{{cancel}}</a>
+    <a href="{{cancelurl}}" class="btn btn-secondary mb-2">
+        {{#str}}cancel, moodle{{/str}}
+    </a>
 </div>

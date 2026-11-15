@@ -24,7 +24,6 @@
 
 require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
-require_once($CFG->libdir . '/formslib.php');
 
 admin_externalpage_setup('local_githubinstaller');
 require_capability('moodle/site:config', context_system::instance());
@@ -37,7 +36,7 @@ $PAGE->set_url(new moodle_url('/local/githubinstaller/index.php',
 if (!empty($CFG->disableupdateautodeploy)) {
     echo $OUTPUT->header();
     echo $OUTPUT->render_from_template('local_githubinstaller/overview', [
-        'error' => get_string('autodeploydisabled', 'local_githubinstaller'),
+        'disabled' => true,
     ]);
     echo $OUTPUT->footer();
     exit;
@@ -47,54 +46,38 @@ if ($action === 'review') {
     require_sesskey();
     $package = \local_githubinstaller\manager::inspect_storage($storage);
 
-    $rows = [
-        [
-            'label' => get_string('component', 'local_githubinstaller'),
-            'value' => $package['component'],
-        ],
-        [
-            'label' => get_string('newversion', 'local_githubinstaller'),
-            'value' => $package['version'],
-        ],
-        [
-            'label' => get_string('currentversion', 'local_githubinstaller'),
-            'value' => $package['currentversion'] !== ''
-                ? $package['currentversion']
-                : get_string('notinstalled', 'local_githubinstaller'),
-        ],
-        [
-            'label' => get_string('operation', 'local_githubinstaller'),
-            'value' => get_string($package['installed'] ? 'update' : 'install', 'local_githubinstaller'),
-        ],
-    ];
-
-    // The native installer validates the archive and presents its own approval buttons.
+    // Moodle's native ZIP installer performs the subsequent validation and approval.
     echo $OUTPUT->header();
-    echo $OUTPUT->heading(get_string('reviewheading', 'local_githubinstaller'));
     echo $OUTPUT->render_from_template('local_githubinstaller/review', [
-        'intro' => get_string('reviewintro', 'local_githubinstaller'),
-        'rows' => $rows,
+        'component' => $package['component'],
+        'version' => $package['version'],
+        'currentversion' => $package['currentversion'],
+        'hascurrentversion' => $package['currentversion'] !== '',
+        'installed' => $package['installed'],
         'sameversion' => $package['currentversion'] !== '' &&
             (float)$package['currentversion'] === (float)$package['version'],
-        'sameversionwarning' => get_string('sameversionwarning', 'local_githubinstaller'),
-        'warning' => get_string('reviewwarning', 'local_githubinstaller'),
         'nativeaction' => (new moodle_url('/admin/tool/installaddon/index.php'))->out(false),
-        'component' => $package['component'],
         'storage' => $package['storage'],
         'sesskey' => sesskey(),
-        'continuevalidation' => get_string('continuevalidation', 'local_githubinstaller'),
         'cancelurl' => (new moodle_url('/local/githubinstaller/index.php'))->out(false),
-        'cancel' => get_string('cancel', 'moodle'),
     ]);
     echo $OUTPUT->footer();
     exit;
 }
 
-$repositoryform = new \local_githubinstaller\form\repository_form();
+$repository = '';
+$ref = '';
+$reftype = 'branch';
 $error = '';
-if ($data = $repositoryform->get_data()) {
+
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+    require_sesskey();
+    $repository = optional_param('repository', '', PARAM_RAW_TRIMMED);
+    $ref = optional_param('ref', '', PARAM_RAW_TRIMMED);
+    $reftype = optional_param('reftype', 'branch', PARAM_ALPHA);
+
     try {
-        $package = \local_githubinstaller\manager::prepare($data->repository, $data->ref, $data->reftype);
+        $package = \local_githubinstaller\manager::prepare($repository, $ref, $reftype);
         redirect(new moodle_url('/local/githubinstaller/index.php', [
             'action' => 'review',
             'storage' => $package['storage'],
@@ -106,10 +89,14 @@ if ($data = $repositoryform->get_data()) {
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('pluginname', 'local_githubinstaller'));
 echo $OUTPUT->render_from_template('local_githubinstaller/overview', [
-    'introduction' => get_string('introduction', 'local_githubinstaller'),
+    'actionurl' => (new moodle_url('/local/githubinstaller/index.php'))->out(false),
+    'sesskey' => sesskey(),
+    'repository' => $repository,
+    'ref' => $ref,
+    'branchselected' => $reftype === 'branch',
+    'tagselected' => $reftype === 'tag',
+    'commitselected' => $reftype === 'commit',
     'error' => $error,
 ]);
-$repositoryform->display();
 echo $OUTPUT->footer();
