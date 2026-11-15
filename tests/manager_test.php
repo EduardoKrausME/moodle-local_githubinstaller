@@ -16,7 +16,6 @@
 
 namespace local_githubinstaller;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Tests for source validation, without performing network requests.

@@ -25,6 +25,8 @@ namespace local_githubinstaller\privacy;
  */
 final class provider implements \core_privacy\local\metadata\null_provider {
     /**
+     * Explain why this plugin does not store personal data.
+     *
      * @return string Explanation.
      */
     public static function get_reason(): string {
